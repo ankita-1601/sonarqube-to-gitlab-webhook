@@ -19,18 +19,19 @@ func ReceiveEvents(c echo.Context) (err error) {
 	}
 	// Restore the io.ReadCloser to its original state
 	c.Request().Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-	// Use the content
 	bodyString := string(bodyBytes)
-	event := new(domain.Events)
-	if err = c.Bind(event); err != nil {
-		return c.JSON(http.StatusBadRequest, err)
-	}
-	// Headers
+	// Headers Validation
 	sonarWebhook := c.Request().Header.Get("X-Sonar-Webhook-Hmac-Sha256")
 	verifier := usecase.ValidateWebhook(sonarWebhook, bodyString)
 	if verifier != true {
 		return c.JSON(http.StatusForbidden, nil)
 	}
+	// Use the content
+	event := new(domain.Events)
+	if err = c.Bind(event); err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
 	go usecase.GitlabCommit(event.Project.Name, event.Revision, event.Project.URL, event.Status)
 	go fmt.Printf("[INFO]: Project Name %s, Project URL: %s, Status: %s, Revision: %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
 	return c.JSON(http.StatusCreated, "OK")
