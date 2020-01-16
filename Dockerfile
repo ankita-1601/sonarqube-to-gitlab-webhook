@@ -1,4 +1,4 @@
-FROM golang:1.12.6-alpine3.10 AS golang
+FROM golang:1.13.6-alpine3.11 AS golang
 
 RUN apk add --no-cache git
 RUN go get github.com/golang/dep && go install github.com/golang/dep/cmd/dep
@@ -8,7 +8,7 @@ COPY . /builds/go/src/github.com/betorvs/sonarqube-to-gitlab-webhook/
 ENV CGO_ENABLED 0
 RUN cd /builds/go/src/github.com/betorvs/sonarqube-to-gitlab-webhook/ && dep ensure -v && go build
 
-FROM alpine:3.10
+FROM alpine:3.11
 WORKDIR /
 VOLUME /tmp
 RUN apk add --no-cache ca-certificates
