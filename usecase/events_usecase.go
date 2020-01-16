@@ -13,7 +13,7 @@ import (
 )
 
 // GitlabCommit func
-func GitlabCommit(projectName string, revision string, url string, status string) (string, error) {
+func GitlabCommit(projectName string, revision string, url string, status string) {
 	project := strings.Split(projectName, "/")
 	urlget := fmt.Sprintf("%s/api/v4/projects?search=%s", config.GitlabURL, project[1])
 	statusCode, projectID, err := gitlabclient.GitlabGetProjectID(config.GitlabToken, urlget)
@@ -26,8 +26,6 @@ func GitlabCommit(projectName string, revision string, url string, status string
 		"note": form,
 	}
 	go gitlabclient.GitlabPostComment(posturl, extraParams)
-
-	return "OK", nil
 }
 
 // ValidateWebhook func to validate auth from Sonarqube

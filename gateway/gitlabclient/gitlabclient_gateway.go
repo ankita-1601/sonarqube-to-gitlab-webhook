@@ -32,15 +32,19 @@ func GitlabGetProjectID(token string, url string) (string, string, error) {
 		log.Printf("[ERROR] %s", err)
 	}
 	var result []map[string]interface{}
-	json.Unmarshal(bodyText, &result)
+	err = json.Unmarshal(bodyText, &result)
+	if err != nil {
+		log.Printf("[ERROR] %s", err)
+	}
 	s := result[0]
 	res := fmt.Sprint(s["id"])
+	go log.Printf("[INFO] ProjectID: %s, %s", resp.Status, s)
 	defer resp.Body.Close()
 	return resp.Status, res, nil
 }
 
 // GitlabPostComment func
-func GitlabPostComment(url string, params map[string]string) (string, string, error) {
+func GitlabPostComment(url string, params map[string]string) {
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -68,8 +72,7 @@ func GitlabPostComment(url string, params map[string]string) (string, string, er
 		log.Printf("[ERROR] %s", err)
 	}
 	s := string(bodyText)
-	go log.Printf("[INFO]: %s, %s", resp.Status, s)
+	go log.Printf("[INFO] Gitlab Commit: %s, %s", resp.Status, s)
 	defer resp.Body.Close()
-	return resp.Status, s, nil
 
 }

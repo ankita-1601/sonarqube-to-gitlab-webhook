@@ -23,7 +23,7 @@ func ReceiveEvents(c echo.Context) (err error) {
 	// Headers Validation
 	sonarWebhook := c.Request().Header.Get("X-Sonar-Webhook-Hmac-Sha256")
 	verifier := usecase.ValidateWebhook(sonarWebhook, bodyString)
-	if verifier != true {
+	if !verifier {
 		return c.JSON(http.StatusForbidden, nil)
 	}
 	// Use the content
