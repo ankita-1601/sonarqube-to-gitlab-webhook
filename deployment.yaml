@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook-sonarqube-webhook
+  namespace: sonarqube-webhook
+  labels:
+    app.kubernetes.io/name: sonarqube-webhook
+    app.kubernetes.io/instance: webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sonarqube-webhook
+      app.kubernetes.io/instance: webhook
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sonarqube-webhook
+        app.kubernetes.io/instance: webhook
+    spec:
+      containers:
+        - name: sonarqube-webhook
+          image: "betorvs/sonarqube-to-gitlab-webhook:latest"
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: GITLAB_URL
+            value: "https://gitlab.example.local"
+          - name: SONARQUBE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: sonarqube-webhook
+                key: sonarqubeSecret
+          - name: GITLAB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: sonarqube-webhook
+                key: gitlabToken
+          ports:
+            - name: http
+              containerPort: 9090
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /sonarqube-to-gitlab-webhook/v1/health
+              port: 9090
+          readinessProbe:
+            httpGet:
+              path: /sonarqube-to-gitlab-webhook/v1/health
+              port: 9090
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: webhook-sonarqube-webhook
+  namespace: sonarqube-webhook
+  labels:
+    app.kubernetes.io/name: sonarqube-webhook
+    app.kubernetes.io/instance: webhook
+spec:
+  rules:
+    - host: "webhook.example.local"
+      http:
+        paths:
+          - path: /sonarqube-to-gitlab-webhook
+            backend:
+              serviceName: webhook-sonarqube-webhook
+              servicePort: 9090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-sonarqube-webhook
+  namespace: sonarqube-webhook
+  labels:
+    app.kubernetes.io/name: sonarqube-webhook
+    app.kubernetes.io/instance: webhook
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9090
+      targetPort: 9090
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: sonarqube-webhook
+    app.kubernetes.io/instance: webhook

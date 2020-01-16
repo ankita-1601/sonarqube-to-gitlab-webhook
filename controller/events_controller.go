@@ -2,8 +2,8 @@ package controller
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/domain"
@@ -31,8 +31,8 @@ func ReceiveEvents(c echo.Context) (err error) {
 	if err = c.Bind(event); err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-
+	go log.Printf("[INFO]: Project Name %s, Project URL: %s, Status: %s, Revision: %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
 	go usecase.GitlabCommit(event.Project.Name, event.Revision, event.Project.URL, event.Status)
-	go fmt.Printf("[INFO]: Project Name %s, Project URL: %s, Status: %s, Revision: %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
+
 	return c.JSON(http.StatusCreated, "OK")
 }

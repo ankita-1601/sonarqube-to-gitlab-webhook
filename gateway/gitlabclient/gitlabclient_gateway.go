@@ -3,6 +3,7 @@ package gitlabclient
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -36,9 +37,18 @@ func GitlabGetProjectID(token string, url string) (string, string, error) {
 	if err != nil {
 		log.Printf("[ERROR] %s", err)
 	}
-	s := result[0]
-	res := fmt.Sprint(s["id"])
-	go log.Printf("[INFO] ProjectID: %s, %s", resp.Status, s)
+	// fmt.Printf("INFO: %s", result)
+	var res string
+	if len(result) > 0 {
+		s := result[0]
+		res = fmt.Sprint(s["id"])
+		go log.Printf("[INFO] ProjectID: %s, %s", resp.Status, res)
+	} else {
+		res = "emptyResponse"
+		err := errors.New("Empty Response")
+		return "", res, err
+	}
+
 	defer resp.Body.Close()
 	return resp.Status, res, nil
 }

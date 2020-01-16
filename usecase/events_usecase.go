@@ -14,8 +14,17 @@ import (
 
 // GitlabCommit func
 func GitlabCommit(projectName string, revision string, url string, status string) {
-	project := strings.Split(projectName, "/")
-	urlget := fmt.Sprintf("%s/api/v4/projects?search=%s", config.GitlabURL, project[1])
+	// test if project doesn't contain /
+	var project string
+	if strings.Contains(projectName, "/") {
+		projectSlice := strings.Split(projectName, "/")
+		project = projectSlice[1]
+	} else {
+		project = projectName
+	}
+	// project := strings.Split(projectName, "/")
+	urlget := fmt.Sprintf("%s/api/v4/projects?search=%s", config.GitlabURL, project)
+	// fmt.Printf("INFO: %s, %s", project, urlget)
 	statusCode, projectID, err := gitlabclient.GitlabGetProjectID(config.GitlabToken, urlget)
 	if err != nil {
 		log.Printf("[ERROR]: %s, %s", statusCode, err)
@@ -36,6 +45,6 @@ func ValidateWebhook(header string, message string) bool {
 		return false
 	}
 	calculatedMAC := hex.EncodeToString(mac.Sum(nil))
-	fmt.Printf("Headers: %s ; %s", calculatedMAC, header)
+	// fmt.Printf("Headers: %s ; %s", calculatedMAC, header)
 	return hmac.Equal([]byte(calculatedMAC), []byte(header))
 }

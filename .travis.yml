@@ -19,3 +19,5 @@ env:
 after_success:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker push betorvs/sonarqube-to-gitlab-webhook:$COMMIT
+  - docker tag betorvs/sonarqube-to-gitlab-webhook:$COMMIT betorvs/sonarqube-to-gitlab-webhook:latest
+  - docker push betorvs/sonarqube-to-gitlab-webhook:latest
