@@ -14,8 +14,14 @@ import (
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/config"
 )
 
+const (
+	// notDefined string constante
+	notDefined    string = "NotDefined"
+	emptyResponse string = "emptyResponse"
+)
+
 // GitlabGetProjectID func
-func GitlabGetProjectID(token string, url string) (string, string, error) {
+func GitlabGetProjectID(token string, url string, projectPathWithNamespace string) (string, string, error) {
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -40,13 +46,24 @@ func GitlabGetProjectID(token string, url string) (string, string, error) {
 	// fmt.Printf("INFO: %s", result)
 	var res string
 	if len(result) > 0 {
-		s := result[0]
-		res = fmt.Sprint(s["id"])
-		go log.Printf("[INFO] ProjectID: %s, %s", resp.Status, res)
+		number := fmt.Sprintf("%d", len(result))
+		go log.Printf("[INFO] Number of Projects Found: %s", number)
+		// we use projectPathWithNamespace to match entry
+		if projectPathWithNamespace != notDefined {
+			for _, n := range result {
+				if projectPathWithNamespace == n["path_with_namespace"] {
+					res = fmt.Sprint(n["id"])
+				}
+			}
+		} else {
+			// Using the first entry in array. Maybe it will not work if return more than one project
+			s := result[0]
+			res = fmt.Sprint(s["id"])
+		}
 	} else {
-		res = "emptyResponse"
+		res = emptyResponse
 		err := errors.New("Empty Response")
-		return "", res, err
+		return "204", res, err
 	}
 
 	defer resp.Body.Close()
