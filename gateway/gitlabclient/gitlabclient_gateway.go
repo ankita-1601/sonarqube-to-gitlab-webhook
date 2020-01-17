@@ -26,24 +26,15 @@ func GitlabGetProjectID(token string, url string, projectPathWithNamespace strin
 		Timeout: time.Second * 10,
 	}
 	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	printError(true, err)
 	req.Header.Add("Private-Token", config.GitlabToken)
 	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
+	printError(true, err)
 	bodyText, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("[ERROR] %s", err)
-	}
+	printError(false, err)
 	var result []map[string]interface{}
 	err = json.Unmarshal(bodyText, &result)
-	if err != nil {
-		log.Printf("[ERROR] %s", err)
-	}
-	// fmt.Printf("INFO: %s", result)
+	printError(false, err)
 	var res string
 	if len(result) > 0 {
 		number := fmt.Sprintf("%d", len(result))
@@ -81,25 +72,26 @@ func GitlabPostComment(url string, params map[string]string) {
 		_ = writer.WriteField(key, val)
 	}
 	err := writer.Close()
-	if err != nil {
-		log.Printf("[ERROR]: %s", err)
-	}
+	printError(false, err)
 	req, err := http.NewRequest("POST", url, body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	printError(true, err)
 	req.Header.Add("Private-Token", config.GitlabToken)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
+	printError(true, err)
 	bodyText, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("[ERROR] %s", err)
-	}
+	printError(false, err)
 	s := string(bodyText)
 	go log.Printf("[INFO] Gitlab Commit: %s, %s", resp.Status, s)
 	defer resp.Body.Close()
+}
 
+func printError(fatal bool, err error) {
+	if err != nil {
+		if !fatal {
+			log.Printf("[ERROR] %s", err)
+		} else {
+			log.Fatal(err)
+		}
+	}
 }
