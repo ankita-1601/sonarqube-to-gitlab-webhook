@@ -16,7 +16,7 @@ install:
 script:
 - "$(go env GOPATH)/bin/golangci-lint run"
 - go test -v -race ./...
-- sonar-scanner
+- sonar-scanner -Dsonar.projectKey=betorvs_sonarqube-to-gitlab-webhook
 - docker build -f Dockerfile -t betorvs/sonarqube-to-gitlab-webhook:$COMMIT .
 env:
   global:
