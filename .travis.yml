@@ -1,23 +1,29 @@
 language: go
 go:
 - 1.13.x
-
 services:
-  - docker
+- docker
+
+addons:
+  sonarcloud:
+    organization: "betorvs"
+    token:
+      secure: "L4SvGPGf35YNVg4KJGUP2WNWDHI3IVNZJYc5Kz6ahEsEUoLnO52tXEYOmHe24eQNAQcfQBmw7x0htQZlj6/8iz5jC/+TCTtDTY5jhUq2jPvrMvyxdkfCdDDBeVQ1nNK2a4rRLZdTIRjmOHKvrp01yPpmaaiPzn/t3bYQxGPiQsYALjb4iSuFwMeQ4pR4mPiVve/jBuXhGegkk0tBfdr9PkCnCpbw2WrgDWM5W7BLbKj0PbW3O5mU97OHY80rWnEypuOXjf/PlFQbMJ3IlCbZUc57B6E0LM4hrJ5pAvVbY//ZjnSqJS3H+8k4v6yRMwoKSh//7T2TQxdmmbsoZEu9/MP/mJ86Ftoz/7QwdGE8Ps4bs9bdlu+6v3ukc0uav7KaEg/fbD/8963zBUNfjxshF4iBIjeNE4C7Vjk260meCrX9RqsLYg3kRsEJIjim2ToFAIbbwxXTuLodBvxsUYGZTlkjt/MAW6rVIi2qMzibgObrUwEaDbWdzT1BhXsEljl3S6NTAED1doUaKePiRCusOK1TJA0o2DE2XrG4cEu8Va44kgsg9UHaionTR4u+ZiPdmLWW0pkCPA6E4A9EYrIo96/aq2wvDBd8IIpbYKjwlGSee7gRYzgh8zcr6ToGOKdUJXATEWKdrhs3hRoOA5Pc5xRmdKgveQJOnrNTZJohG3Y="
 
 install:
-- curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.22.2
+- curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh
+  | sh -s -- -b $(go env GOPATH)/bin v1.22.2
 script:
-- $(go env GOPATH)/bin/golangci-lint run
+- "$(go env GOPATH)/bin/golangci-lint run"
 - go test -v -race ./...
+- sonar-scanner
 - docker build -f Dockerfile -t betorvs/sonarqube-to-gitlab-webhook:$COMMIT .
-
 env:
   global:
-    - COMMIT=${TRAVIS_COMMIT::8}
-
+  - COMMIT=${TRAVIS_COMMIT::8}
+  - secure: gw8Gr9KLuGPxcaEX9EBDHl4MaPAKM6q1HF7c95Kl5IarLFZMJeVy4wYzT1Zki8jpSXB1MKL8mUAp5uv3ff3LdyJZDnvqQRaYfgACEvyExNvoSneEW4D0fksFnwJxiF4Fo6iwlSv1Tp1Hu/ZSiwu3ErEsIHM8oMcj95GqZUKGwZ0R0PJQslC0zYTpxKVadzQSFh6sCyz8iCycldwWnZXf9XcPFHMFuw9NoiI0n5xbzgFol00jVIp/ZTkFKYdS51+4CB4X/8BxAiV+XhuRxFeTYRwatZEODUxq8BAHXU30pUTNO3Mh1xjcLOAQdWOMDK25mz1zAmxLpt8NoZbYYKVumb6n1tc5HfHH+Q1TDkZcUX5uZE4g+ElqUoe9oHT3hEPcaKljh3pKjLOE3LfGN+TdBVByriEP0jWuh6GIyLbcP8N1Ivq69QSeVvI/WGtZnlEKCv5QE2+JDHT6XZTylcfWffVf/6jFci8aGhG1RD386t8WJuJTOSlQp4ixHLunyJzFDjGI2Exm+a7fz9IaWhWuL3gIE8glUWz6FoPT1E4VQvuYb3UTA85kBhH2ejvqNaCJeORgqDA2/S+kCSoiCRDXvlDqMmswH3UptBcaM8TInecs5mug0F381hZlT+z4XzPJOEIhL884GBD1tBqSWPISTfc20cwLNjo8C4N8zgqUa20=
 after_success:
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker push betorvs/sonarqube-to-gitlab-webhook:$COMMIT
-  - docker tag betorvs/sonarqube-to-gitlab-webhook:$COMMIT betorvs/sonarqube-to-gitlab-webhook:latest
-  - docker push betorvs/sonarqube-to-gitlab-webhook:latest
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+- docker push betorvs/sonarqube-to-gitlab-webhook:$COMMIT
+- docker tag betorvs/sonarqube-to-gitlab-webhook:$COMMIT betorvs/sonarqube-to-gitlab-webhook:latest
+- docker push betorvs/sonarqube-to-gitlab-webhook:latest

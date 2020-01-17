@@ -31,7 +31,7 @@ func ReceiveEvents(c echo.Context) (err error) {
 	if err = c.Bind(event); err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	go log.Printf("[INFO]: Project Name %s, Project URL: %s, Status: %s, Revision: %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
+	go log.Printf("[INFO] Project Name %s, Project URL: %s, Status: %s, Revision: %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
 	go usecase.GitlabCommit(event.Project.Name, event.Revision, event.Project.URL, event.Status)
 
 	return c.JSON(http.StatusCreated, "OK")
