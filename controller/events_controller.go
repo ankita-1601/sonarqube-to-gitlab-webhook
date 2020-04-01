@@ -8,7 +8,7 @@ import (
 
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/domain"
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/usecase"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 //ReceiveEvents func
@@ -32,7 +32,8 @@ func ReceiveEvents(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 	go log.Printf("[INFO] Project Name %s, Project URL: %s, Status: %s, Revision: %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
-	go usecase.GitlabCommit(event.Project.Name, event.Revision, event.Project.URL, event.Status)
+	// go usecase.GitlabCommit(event.Project.Name, event.Revision, event.Project.URL, event.Status)
+	go usecase.GitlabCommit(event)
 
 	return c.JSON(http.StatusCreated, "OK")
 }

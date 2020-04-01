@@ -15,15 +15,24 @@ install:
   | sh -s -- -b $(go env GOPATH)/bin v1.22.2
 script:
 - "$(go env GOPATH)/bin/golangci-lint run"
-- go test -v -race ./...
+- GITLAB_URL="https://gitlab.example.local" GITLAB_TOKEN="test" SONARQUBE_SECRET="test" go test -v -race ./...
 - sonar-scanner -Dsonar.projectKey=betorvs_sonarqube-to-gitlab-webhook
 - docker build -f Dockerfile -t betorvs/sonarqube-to-gitlab-webhook:$COMMIT .
 env:
   global:
   - COMMIT=${TRAVIS_COMMIT::8}
   - secure: gw8Gr9KLuGPxcaEX9EBDHl4MaPAKM6q1HF7c95Kl5IarLFZMJeVy4wYzT1Zki8jpSXB1MKL8mUAp5uv3ff3LdyJZDnvqQRaYfgACEvyExNvoSneEW4D0fksFnwJxiF4Fo6iwlSv1Tp1Hu/ZSiwu3ErEsIHM8oMcj95GqZUKGwZ0R0PJQslC0zYTpxKVadzQSFh6sCyz8iCycldwWnZXf9XcPFHMFuw9NoiI0n5xbzgFol00jVIp/ZTkFKYdS51+4CB4X/8BxAiV+XhuRxFeTYRwatZEODUxq8BAHXU30pUTNO3Mh1xjcLOAQdWOMDK25mz1zAmxLpt8NoZbYYKVumb6n1tc5HfHH+Q1TDkZcUX5uZE4g+ElqUoe9oHT3hEPcaKljh3pKjLOE3LfGN+TdBVByriEP0jWuh6GIyLbcP8N1Ivq69QSeVvI/WGtZnlEKCv5QE2+JDHT6XZTylcfWffVf/6jFci8aGhG1RD386t8WJuJTOSlQp4ixHLunyJzFDjGI2Exm+a7fz9IaWhWuL3gIE8glUWz6FoPT1E4VQvuYb3UTA85kBhH2ejvqNaCJeORgqDA2/S+kCSoiCRDXvlDqMmswH3UptBcaM8TInecs5mug0F381hZlT+z4XzPJOEIhL884GBD1tBqSWPISTfc20cwLNjo8C4N8zgqUa20=
-after_success:
-- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-- docker push betorvs/sonarqube-to-gitlab-webhook:$COMMIT
-- docker tag betorvs/sonarqube-to-gitlab-webhook:$COMMIT betorvs/sonarqube-to-gitlab-webhook:latest
-- docker push betorvs/sonarqube-to-gitlab-webhook:latest
+# after_success:
+# - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+# - docker push betorvs/sonarqube-to-gitlab-webhook:$COMMIT
+# - docker tag betorvs/sonarqube-to-gitlab-webhook:$COMMIT betorvs/sonarqube-to-gitlab-webhook:latest
+# - docker push betorvs/sonarqube-to-gitlab-webhook:latest
+deploy:
+  - provider: script
+    script: bash travis_deploy.sh "betorvs/sonarqube-to-gitlab-webhook" $COMMIT false
+    on:
+      branch: master
+  - provider: script
+    script: bash travis_deploy.sh "betorvs/sonarqube-to-gitlab-webhook" ${TRAVIS_TAG} true
+    on:
+      tags: true

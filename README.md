@@ -62,4 +62,9 @@ sonar-project.properties
 
 ```
 sonar.projectKey=projectGroup/projectName
+sonar.analysis.disabledGitlabPost=false
+sonar.analysis.disabledQualityReport=true
 ```
+
+Use `sonar.analysis.disabledGitlabPost` equal `true` to disable post in GitLab.   
+Use `sonar.analysis.disabledQualityReport` equal `true` to remove full quality report (it will print only Quality Gateway Name and Quality Gateway Status)

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/config"
+	"github.com/betorvs/sonarqube-to-gitlab-webhook/domain"
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/gateway/gitlabclient"
 )
 
@@ -19,9 +20,11 @@ const (
 )
 
 // GitlabCommit func
-func GitlabCommit(projectName string, revision string, url string, status string) {
+func GitlabCommit(event *domain.Events) {
+	// func GitlabCommit(projectName string, revision string, url string, status string) {
+	//event.Revision, event.Project.URL, event.Status
 	// test projectName
-	project, projectPathWithNamespace := testProjectName(projectName)
+	project, projectPathWithNamespace := testProjectName(event.Project.Name)
 	// project := strings.Split(projectName, "/")
 	urlget := fmt.Sprintf("%s/api/v4/projects?search=%s", config.GitlabURL, project)
 	// fmt.Printf("INFO: %s, %s", project, urlget)
@@ -29,17 +32,79 @@ func GitlabCommit(projectName string, revision string, url string, status string
 	if err != nil {
 		log.Printf("[ERROR]: %s, %s", statusCode, err)
 	}
-	posturl := fmt.Sprintf("%s/api/v4/projects/%s/repository/commits/%s/comments", config.GitlabURL, projectID, revision)
-	form := fmt.Sprintf("SONARQUBE Status: %s , URL: %s", status, url)
+	posturl := fmt.Sprintf("%s/api/v4/projects/%s/repository/commits/%s/comments", config.GitlabURL, projectID, event.Revision)
+
+	form, err := parseForm(event)
+	if err != nil {
+		form = fmt.Sprintf("SONARQUBE Status: %s , URL: %s", event.Status, event.Project.URL)
+		log.Printf("[ERROR] Cannot parse event fields %s", event.Project.Name)
+	}
 	extraParams := map[string]string{
 		"note": form,
 	}
-	if projectID != emptyResponse {
+
+	if projectID != emptyResponse && !shouldPost(event) {
 		go gitlabclient.GitlabPostComment(posturl, extraParams)
 	} else {
-		log.Printf("[INFO] ProjectID not found for ProjectName: %s ", projectName)
+		log.Printf("[INFO] ProjectID not found for Project Name: %s ", event.Project.Name)
 	}
 
+}
+
+func parseForm(event *domain.Events) (string, error) {
+	var form string
+	var finalForm string
+	form = fmt.Sprintf("SONARQUBE Report: URL: %s  ", event.Project.URL)
+	if event.Branch.URL != "" {
+		form = fmt.Sprintf("SONARQUBE Report: URL: %s  ", event.Branch.URL)
+	}
+	var qualityGateway string
+	qualityGateway += fmt.Sprintf("Quality Gateway Name: %s  \n", event.QualityGate.Name)
+	qualityGateway += fmt.Sprintf("Quality Gateway Status: %s  \n", event.QualityGate.Status)
+	if !shouldSendQualityReport(event) {
+		for _, v := range event.QualityGate.Conditions {
+			qualityGateway += fmt.Sprintf("Metric Name: %s  \n", v.Metric)
+			qualityGateway += fmt.Sprintf("Operator: %s  \n", v.Operator)
+			if v.Value != "" {
+				qualityGateway += fmt.Sprintf("Value: %s  \n", v.Value)
+			}
+			qualityGateway += fmt.Sprintf("Error Threshold: %s  \n", v.ErrorThreshold)
+			qualityGateway += fmt.Sprintf("Status: %s  \n", v.Status)
+		}
+	}
+	if qualityGateway != "" {
+		finalForm = fmt.Sprintf("%s,  \n%s", form, qualityGateway)
+	}
+
+	// fmt.Println(finalForm)
+	return finalForm, nil
+}
+
+func shouldPost(event *domain.Events) bool {
+	var disabledGitlabPost bool
+	disabledGitlabPost = false
+	if len(event.Properties) != 0 {
+		value := event.Properties["sonar.analysis.disabledGitlabPost"]
+		if value == "true" {
+			disabledGitlabPost = true
+			// fmt.Println("should not post")
+		}
+	}
+	return disabledGitlabPost
+}
+
+func shouldSendQualityReport(event *domain.Events) bool {
+	var disabledQualityReport bool
+	disabledQualityReport = false
+
+	if len(event.Properties) != 0 {
+		value := event.Properties["sonar.analysis.disabledQualityReport"]
+		if value == "true" {
+			disabledQualityReport = true
+			// fmt.Println("should not post")
+		}
+	}
+	return disabledQualityReport
 }
 
 // ValidateWebhook func to validate auth from Sonarqube

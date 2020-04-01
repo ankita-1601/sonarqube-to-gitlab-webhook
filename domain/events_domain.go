@@ -2,16 +2,16 @@ package domain
 
 //Events struct
 type Events struct {
-	ServerURL   string      `json:"serverUrl"`
-	TaskID      string      `json:"taskId"`
-	Status      string      `json:"status"`
-	AnalysedAt  string      `json:"analysedAt"`
-	Revision    string      `json:"revision"`
-	ChangedAt   string      `json:"changedAt"`
-	Project     Project     `json:"project"`
-	Branch      Branch      `json:"branch"`
-	QualityGate QualityGate `json:"qualityGate"`
-	Properties  Properties  `json:"properties"`
+	ServerURL   string            `json:"serverUrl"`
+	TaskID      string            `json:"taskId"`
+	Status      string            `json:"status"`
+	AnalysedAt  string            `json:"analysedAt"`
+	Revision    string            `json:"revision"`
+	ChangedAt   string            `json:"changedAt"`
+	Project     Project           `json:"project"`
+	Branch      Branch            `json:"branch"`
+	QualityGate QualityGate       `json:"qualityGate"`
+	Properties  map[string]string `json:"properties"`
 }
 
 // Project struct
@@ -45,6 +45,8 @@ type QualityGate struct {
 	Conditions []Conditions `json:"conditions"`
 }
 
-//Properties struct
-type Properties struct {
-}
+// //Properties struct
+// type Properties struct {
+// 	EnabledGitlabPost    bool
+// 	DisableQualityReport bool
+// }
