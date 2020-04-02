@@ -329,6 +329,8 @@ func TestValidateWebhook(t *testing.T) {
 }
 
 func TestSearchProjectID(t *testing.T) {
+	config.GitlabURL = "http://gitlab.example.local"
+	config.GitlabToken = "aaaa-bbb-ssss"
 	repo := utiltests.RepositoryMock{}
 	appcontext.Current.Add(appcontext.Repository, repo)
 	projectID, err := searchProjectID("foobar", "foobar/foobarsystem")
@@ -342,6 +344,8 @@ func TestSearchProjectID(t *testing.T) {
 }
 
 func TestSearchProjectIDWithoutNamespace(t *testing.T) {
+	config.GitlabURL = "http://gitlab.example.local"
+	config.GitlabToken = "aaaa-bbb-ssss"
 	repo := utiltests.RepositoryMock{}
 	appcontext.Current.Add(appcontext.Repository, repo)
 	projectID, err := searchProjectID("fakesystem", notDefined)
