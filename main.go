@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/config"
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/controller"
+	_ "github.com/betorvs/sonarqube-to-gitlab-webhook/gateway/gitlabclient"
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

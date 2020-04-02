@@ -1,6 +1,6 @@
 package domain
 
-//Events struct
+//Events struct from sonarqube
 type Events struct {
 	ServerURL   string            `json:"serverUrl"`
 	TaskID      string            `json:"taskId"`

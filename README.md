@@ -68,3 +68,42 @@ sonar.analysis.disabledQualityReport=true
 
 Use `sonar.analysis.disabledGitlabPost` equal `true` to disable post in GitLab.   
 Use `sonar.analysis.disabledQualityReport` equal `true` to remove full quality report (it will print only Quality Gateway Name and Quality Gateway Status)
+
+
+## Example of commit
+
+
+# SONARQUBE REPORT  
+URL: [Report Link](https://sonar.example.com/dashboard?id=greatuser%2Ftest&branch=test)  
+  
+## Quality Gateway  
+ - Name: TEST  
+ - Status: OK  
+### Quality Gateway Conditions  
+#### Metric Name: reliability_rating  
+ - Operator: GREATER_THAN  
+ - Value: 1  
+ - Error Threshold: 1  
+ - Status: **OK** :+1:  
+#### Metric Name: security_rating  
+ - Operator: GREATER_THAN  
+ - Value: 1  
+ - Error Threshold: 1  
+ - Status: **OK** :+1:  
+#### Metric Name: maintainability_rating  
+ - Operator: GREATER_THAN  
+ - Value: 1  
+ - Error Threshold: 1  
+ - Status: **OK** :+1:  
+#### Metric Name: coverage  
+ - Operator: LESS_THAN  
+ - Value: 0.0  
+ - Error Threshold: 70  
+ - Status: **OK** :+1:  
+#### Metric Name: duplicated_lines_density  
+ - Operator: GREATER_THAN  
+ - Value: 0.0  
+ - Error Threshold: 3  
+ - Status: **OK** :+1:
+
+

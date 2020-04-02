@@ -15,7 +15,7 @@ install:
   | sh -s -- -b $(go env GOPATH)/bin v1.22.2
 script:
 - "$(go env GOPATH)/bin/golangci-lint run"
-- GITLAB_URL="https://gitlab.example.local" GITLAB_TOKEN="test" SONARQUBE_SECRET="test" go test -v -race ./...
+- TESTRUN="true" go test -v -race ./...
 - sonar-scanner -Dsonar.projectKey=betorvs_sonarqube-to-gitlab-webhook
 - docker build -f Dockerfile -t betorvs/sonarqube-to-gitlab-webhook:$COMMIT .
 env:

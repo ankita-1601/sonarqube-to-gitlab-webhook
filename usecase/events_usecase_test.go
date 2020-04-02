@@ -2,9 +2,12 @@ package usecase
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
+	"github.com/betorvs/sonarqube-to-gitlab-webhook/appcontext"
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/domain"
+	"github.com/betorvs/sonarqube-to-gitlab-webhook/utiltests"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -67,8 +70,7 @@ func TestParseForm(t *testing.T) {
 	  }`)
 	var event domain.Events
 	_ = json.Unmarshal(eventByte, &event)
-	form, err := parseForm(&event)
-	assert.NoError(t, err)
+	form := parseForm(&event)
 	assert.Contains(t, form, "OK")
 }
 
@@ -136,8 +138,7 @@ func TestParseFormComplete(t *testing.T) {
 	  }`)
 	var event domain.Events
 	_ = json.Unmarshal(completeByte, &event)
-	form, err := parseForm(&event)
-	assert.NoError(t, err)
+	form := parseForm(&event)
 	assert.Contains(t, form, "ERROR")
 }
 
@@ -201,7 +202,8 @@ func TestShouldPostAndQuality(t *testing.T) {
 		},
 		"properties": {
 		  "sonar.analysis.disabledGitlabPost": "true",
-		  "sonar.analysis.disabledQualityReport": "true"
+		  "sonar.analysis.disabledQualityReport": "true",
+		  "sonar.analysis.projectID": "123"
 		}
 	  }`)
 	var event domain.Events
@@ -210,8 +212,11 @@ func TestShouldPostAndQuality(t *testing.T) {
 	assert.True(t, properties)
 	quality := shouldSendQualityReport(&event)
 	assert.True(t, quality)
-	// assert.Contains(t, properties, "True")
-
+	shouldUseProjectID, projectID, err := shouldUseProjectID(&event)
+	assert.NoError(t, err)
+	expected := 123
+	assert.True(t, shouldUseProjectID)
+	assert.Equal(t, expected, projectID)
 }
 
 func TestShouldPostAndQualityEmpty(t *testing.T) {
@@ -280,5 +285,79 @@ func TestShouldPostAndQualityEmpty(t *testing.T) {
 	assert.False(t, properties)
 	quality := shouldSendQualityReport(&event)
 	assert.False(t, quality)
+	shouldUseProjectID, projectID, err := shouldUseProjectID(&event)
+	assert.NoError(t, err)
+	expected := 0
+	assert.False(t, shouldUseProjectID)
+	assert.Equal(t, expected, projectID)
+}
 
+func TestCheckProjectName(t *testing.T) {
+	// Expected: projectGroup/projectName
+	testProjectName1 := "projectGroupFoo/projectNameBar"
+	project1, projectPathWithNamespace1 := checkProjectName(testProjectName1)
+	assert.Contains(t, project1, "projectNameBar")
+	assert.Contains(t, projectPathWithNamespace1, "projectGroupFoo")
+
+	// Expected: com.example.local:namewithoutspaces:name-with-dashes-or-not
+	testProjectName2 := "com.example.local:projectfoobar:name-with-dashes-or-not"
+	project2, projectPathWithNamespace2 := checkProjectName(testProjectName2)
+	assert.Contains(t, project2, "projectfoobar")
+	assert.Contains(t, projectPathWithNamespace2, notDefined)
+
+	// only a single name
+	testProjectName3 := "projectFooBar"
+	project3, projectPathWithNamespace3 := checkProjectName(testProjectName3)
+	assert.Contains(t, project3, "projectFooBar")
+	assert.Contains(t, projectPathWithNamespace3, notDefined)
+}
+
+func TestValidateWebhook(t *testing.T) {
+	longString := string("2aeccc9c03b36fea59ebec69")
+	wrongLongString := string("1656ca38de0749bb8620814f")
+	bodyString := string("body")
+	timestamp := "1580475458"
+	baseString := fmt.Sprintf("v0:%s:%s", timestamp, bodyString)
+	signature := "38918cc13bf5e8b9ad7d2b7d85595d5d19af21783b86dbcfe4716422277ae404"
+	if ValidateWebhook(signature, baseString, longString) != true {
+		t.Fatalf("Invalid 1.1 testValidateWebhook %s, %s", signature, longString)
+	}
+	if ValidateWebhook(signature, baseString, wrongLongString) == true {
+		t.Fatalf("Invalid 1.2 testValidateWebhook %s, %s", signature, wrongLongString)
+	}
+}
+
+func TestSearchProjectID(t *testing.T) {
+	repo := utiltests.RepositoryMock{}
+	appcontext.Current.Add(appcontext.Repository, repo)
+	projectID, err := searchProjectID("foobar", "foobar/foobarsystem")
+	assert.NoError(t, err)
+	expected := 1
+	if utiltests.GetGitlabCalls != expected {
+		t.Fatalf("Invalid 1.1 TestSearchProjectID %d", utiltests.GetGitlabCalls)
+	}
+	expectedID := 2
+	assert.Equal(t, expectedID, projectID)
+}
+
+func TestSearchProjectIDWithoutNamespace(t *testing.T) {
+	repo := utiltests.RepositoryMock{}
+	appcontext.Current.Add(appcontext.Repository, repo)
+	projectID, err := searchProjectID("fakesystem", notDefined)
+	assert.NoError(t, err)
+	expectedID := 1
+	assert.Equal(t, expectedID, projectID)
+}
+
+func TestGitlabPostCommit(t *testing.T) {
+	repo := utiltests.RepositoryMock{}
+	appcontext.Current.Add(appcontext.Repository, repo)
+	extraParams := map[string]string{
+		"note": "nice comment",
+	}
+	gitlabPostCommit(utiltests.FakeURL, extraParams)
+	expected := 1
+	if utiltests.GitlabPostCommentCalls != expected {
+		t.Fatalf("Invalid 1.1 TestGitlabPostCommit %d", utiltests.GitlabPostCommentCalls)
+	}
 }

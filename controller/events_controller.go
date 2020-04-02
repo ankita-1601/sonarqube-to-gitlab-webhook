@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/betorvs/sonarqube-to-gitlab-webhook/config"
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/domain"
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/usecase"
 	"github.com/labstack/echo/v4"
@@ -13,6 +14,9 @@ import (
 
 //ReceiveEvents func
 func ReceiveEvents(c echo.Context) (err error) {
+	if config.SonarqubeSecret == "Absent" {
+		return c.JSON(http.StatusForbidden, nil)
+	}
 	var bodyBytes []byte
 	if c.Request().Body != nil {
 		bodyBytes, _ = ioutil.ReadAll(c.Request().Body)
@@ -22,7 +26,7 @@ func ReceiveEvents(c echo.Context) (err error) {
 	bodyString := string(bodyBytes)
 	// Headers Validation
 	sonarWebhook := c.Request().Header.Get("X-Sonar-Webhook-Hmac-Sha256")
-	verifier := usecase.ValidateWebhook(sonarWebhook, bodyString)
+	verifier := usecase.ValidateWebhook(sonarWebhook, bodyString, config.SonarqubeSecret)
 	if !verifier {
 		return c.JSON(http.StatusForbidden, nil)
 	}
