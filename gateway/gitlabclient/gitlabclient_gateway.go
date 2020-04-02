@@ -13,11 +13,11 @@ import (
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/utils"
 )
 
-const (
-	// notDefined string constante
-	notDefined    string = "NotDefined"
-	emptyResponse string = "emptyResponse"
-)
+// const (
+// 	// notDefined string constante
+// 	notDefined    string = "NotDefined"
+// 	emptyResponse string = "emptyResponse"
+// )
 
 // Repository struct
 type Repository struct {
