@@ -15,7 +15,7 @@ import (
 //ReceiveEvents func
 func ReceiveEvents(c echo.Context) (err error) {
 	if config.SonarqubeSecret == "Absent" {
-		return c.JSON(http.StatusForbidden, nil)
+		return c.JSON(http.StatusNotImplemented, nil)
 	}
 	var bodyBytes []byte
 	if c.Request().Body != nil {

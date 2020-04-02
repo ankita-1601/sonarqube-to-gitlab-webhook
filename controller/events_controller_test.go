@@ -19,6 +19,6 @@ func TestPostEvents(t *testing.T) {
 
 	// Assertions
 	if assert.NoError(t, ReceiveEvents(c)) {
-		assert.Equal(t, http.StatusForbidden, rec.Code)
+		assert.Equal(t, http.StatusNotImplemented, rec.Code)
 	}
 }

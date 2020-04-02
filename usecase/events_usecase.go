@@ -53,14 +53,20 @@ func GitlabCommit(event *domain.Events) {
 }
 
 func gitlabPostCommit(posturl string, extraParams map[string]string) {
-	repo := domain.GetRepository()
-	err := repo.GitlabPostComment(posturl, extraParams)
-	if err != nil {
-		log.Printf("[ERROR] Cannot post a gitlab commit")
+	if config.GitlabURL != "Absent" && config.GitlabToken != "Absent" {
+		repo := domain.GetRepository()
+		err := repo.GitlabPostComment(posturl, extraParams)
+		if err != nil {
+			log.Printf("[ERROR] Cannot post a gitlab commit")
+		}
 	}
 }
 
 func searchProjectID(project, projectPathWithNamespace string) (projectWithID int, err error) {
+	if config.GitlabURL == "Absent" || config.GitlabToken == "Absent" {
+		err = errors.New("Gitlab API not configured")
+		return projectWithID, err
+	}
 	// urlget := fmt.Sprintf("%s/api/v4/projects?search=%s", config.GitlabURL, project)
 	var result []domain.GitlabProject
 	repo := domain.GetRepository()
@@ -78,7 +84,6 @@ func searchProjectID(project, projectPathWithNamespace string) (projectWithID in
 	projectsLength := len(result)
 	if projectsLength == 0 {
 		err = errors.New(emptyResponse)
-		fmt.Printf("test 0: %v", projectWithID)
 		return projectWithID, err
 	}
 	if projectPathWithNamespace != notDefined {
@@ -106,7 +111,7 @@ func parseForm(event *domain.Events) string {
 	var qualityGateway string
 	qualityGateway += "## Quality Gateway  \n"
 	qualityGateway += fmt.Sprintf(" - Name: %s  \n", event.QualityGate.Name)
-	qualityGateway += fmt.Sprintf(" - Status: %s  \n", event.QualityGate.Status)
+	qualityGateway += fmt.Sprintf(" - Status: **%s**  \n", event.QualityGate.Status)
 	if !shouldSendQualityReport(event) {
 		qualityGateway += "### Quality Gateway Conditions  \n"
 		for _, v := range event.QualityGate.Conditions {

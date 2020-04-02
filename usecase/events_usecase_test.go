@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/appcontext"
+	"github.com/betorvs/sonarqube-to-gitlab-webhook/config"
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/domain"
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/utiltests"
 	"github.com/stretchr/testify/assert"
@@ -350,6 +351,8 @@ func TestSearchProjectIDWithoutNamespace(t *testing.T) {
 }
 
 func TestGitlabPostCommit(t *testing.T) {
+	config.GitlabToken = "aaaa"
+	config.GitlabURL = "https://gitlab.example.local"
 	repo := utiltests.RepositoryMock{}
 	appcontext.Current.Add(appcontext.Repository, repo)
 	extraParams := map[string]string{
