@@ -3,7 +3,6 @@ package controller
 import (
 	"bytes"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/betorvs/sonarqube-to-gitlab-webhook/config"
@@ -14,7 +13,7 @@ import (
 
 //ReceiveEvents func
 func ReceiveEvents(c echo.Context) (err error) {
-	if config.SonarqubeSecret == "Absent" {
+	if config.Values.SonarqubeSecret == "Absent" {
 		return c.JSON(http.StatusNotImplemented, nil)
 	}
 	var bodyBytes []byte
@@ -26,7 +25,7 @@ func ReceiveEvents(c echo.Context) (err error) {
 	bodyString := string(bodyBytes)
 	// Headers Validation
 	sonarWebhook := c.Request().Header.Get("X-Sonar-Webhook-Hmac-Sha256")
-	verifier := usecase.ValidateWebhook(sonarWebhook, bodyString, config.SonarqubeSecret)
+	verifier := usecase.ValidateWebhook(sonarWebhook, bodyString, config.Values.SonarqubeSecret)
 	if !verifier {
 		return c.JSON(http.StatusForbidden, nil)
 	}
@@ -35,9 +34,13 @@ func ReceiveEvents(c echo.Context) (err error) {
 	if err = c.Bind(event); err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	go log.Printf("[INFO] Project Name %s, Project URL: %s, Status: %s, Revision: %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
-	// go usecase.GitlabCommit(event.Project.Name, event.Revision, event.Project.URL, event.Status)
-	go usecase.GitlabCommit(event)
+	logger := config.GetLogger
+	defer logger().Sync()
+	logger().Infof("Project Name %s, Project URL %s, Status %s, Revision %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
+	err = usecase.GitlabCommit(event)
+	if err != nil {
+		logger().Info("cannot post a commit to gitlab")
+	}
 
 	return c.JSON(http.StatusCreated, "OK")
 }

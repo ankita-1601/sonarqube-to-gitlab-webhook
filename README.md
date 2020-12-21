@@ -1,21 +1,19 @@
 # Sonarqube to Gitlab Webhook
 
-TravisCi [![TravisCI Build Status](https://travis-ci.org/betorvs/sonarqube-to-gitlab-webhook.svg?branch=master)](https://travis-ci.org/betorvs/sonarqube-to-gitlab-webhook)
+![Go Test](https://github.com/github.com/betorvs/sonarqube-to-gitlab-webhook/sonarqube-to-gitlab-webhook/workflows/Go%20Test/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/betorvs/sonarqube-to-gitlab-webhook/badge.svg?branch=master)](https://coveralls.io/github/betorvs/sonarqube-to-gitlab-webhook?branch=master)
 
-
-## Go Installation
-
-Install go
-
-
-### Run
+## Environment variables
 
 ```sh
-go build
-./sonarqube-to-gitlab-webhook
+export PORT=9090
+
+export APP_NAME=sonarqube-to-gitlab-webhook
+
+export LOG_LEVEL=INFO
 ```
 
-## Environment Variables
+### Configuration
 
 You need to configure these for local tests or real deployment.
 
@@ -24,6 +22,32 @@ Configure these environment variables:
 * **SONARQUBE_SECRET** : Secret created in Webhook in Sonarqube configuration. Example: LONGHASH
 * **GITLAB_TOKEN** : Gitlab Personal Token with api access.
 
+
+## Dependency Management
+The project is using [Go Modules](https://blog.golang.org/using-go-modules) for dependency management
+Module: github.com/betorvs/sonarqube-to-gitlab-webhook
+
+## Test and coverage
+
+Run the tests
+
+```sh
+TESTRUN=true go test ./... -coverprofile=cover.out
+
+go tool cover -html=cover.out
+```
+
+Install [golangci-lint](https://github.com/golangci/golangci-lint#install) and run lint:
+
+```sh
+golangci-lint run
+```
+
+## Docker Build
+
+```sh
+docker build .
+```
 
 ## Deploy Kubernetes
 
@@ -116,3 +140,11 @@ URL: [Report Link](https://sonar.example.com/dashboard?id=greatuser%2Ftest&branc
  - Status: **OK** :+1:
 
 
+## References
+
+### Golang Spell
+The project was initialized using [Golang Spell](https://github.com/danilovalente/golangspell).
+
+### Architectural Model
+The Architectural Model adopted to structure the application is based on The Clean Architecture.
+Further details can be found here: [The Clean Architecture](https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html) and in the Clean Architecture Book.
