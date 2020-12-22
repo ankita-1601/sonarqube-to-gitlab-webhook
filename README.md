@@ -23,11 +23,11 @@ Configure these environment variables:
 * **GITLAB_TOKEN** : Gitlab Personal Token with api access.
 
 
-## Dependency Management
+### Dependency Management
 The project is using [Go Modules](https://blog.golang.org/using-go-modules) for dependency management
 Module: github.com/betorvs/sonarqube-to-gitlab-webhook
 
-## Test and coverage
+### Test and coverage
 
 Run the tests
 
@@ -43,24 +43,24 @@ Install [golangci-lint](https://github.com/golangci/golangci-lint#install) and r
 golangci-lint run
 ```
 
-## Docker Build
+### Docker Build
 
 ```sh
 docker build .
 ```
 
-## Deploy Kubernetes
+### Deploy Kubernetes
 
 ```sh
 kubectl create ns sonarqube-webhook
-kubectl create secret generic sonarqube-webhook --from-literal=sonarqubeSecret=LONGHASH --from-literal=gitlabToken=xxx-9X-zxczxczxczxc -n sonarqube-webhook --dry-run -o yaml > sonarqube-secret.yaml
+kubectl create secret generic sonarqube-webhook --from-literal=sonarqubeSecret=LONGHASH --from-literal=gitlabToken=xxx-9X-zxczxczxczxc -n sonarqube-webhook --dry-run=client -o yaml > sonarqube-secret.yaml
 kubectl apply -f sonarqube-secret.yaml
-kubeclt apply -f deployment.yaml
+kubectl apply -f deployment.yaml
 ```
 
 ## Example Job and sonar config
 
-.gitlab-ci.yml
+Creates a step inside your `.gitlab-ci.yml`:
 
 ```
 services:
@@ -104,6 +104,8 @@ sonar.analysis.projectID="10"
 
 
 ## Example of commit
+
+Commit example in [gitlab.com](https://gitlab.com/betorvs/sonarqube-webhook-test/-/commit/278fccb1c6c68b9725e1a40315b39f0ebb3e93a3#note_472095580)
 
 
 # SONARQUBE REPORT  

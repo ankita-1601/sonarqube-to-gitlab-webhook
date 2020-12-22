@@ -1,4 +1,4 @@
-FROM golang:1.14.0-alpine3.11 AS golang
+FROM golang:1.15.0-alpine3.12 AS golang
 
 RUN apk add --no-cache git
 RUN mkdir -p /builds/go/src/github.com/betorvs/sonarqube-to-gitlab-webhook/
@@ -7,7 +7,7 @@ COPY . /builds/go/src/github.com/betorvs/sonarqube-to-gitlab-webhook/
 ENV CGO_ENABLED 0
 RUN cd /builds/go/src/github.com/betorvs/sonarqube-to-gitlab-webhook/ && TESTRUN=true go test ./... && go build
 
-FROM alpine:3.11
+FROM alpine:3.12
 WORKDIR /
 VOLUME /tmp
 RUN apk add --no-cache ca-certificates

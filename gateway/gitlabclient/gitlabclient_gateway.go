@@ -40,10 +40,10 @@ func (repo Repository) GetGitlab(gitlabURL, gitlabToken string) ([]byte, string,
 		if resp.Header.Get("Links") != "" {
 			links = utils.CleanNextLinksHeader(resp.Header.Get("Links"))
 		}
-		logger().Debugf("Response %s and Next Links %s", resp.Status, links)
+		logger().Debug("Response" + resp.Status + " and Next Links " + links)
 		return bodyText, links, nil
 	}
-	logger().Debugf("Response %s", resp.Status)
+	logger().Debugf("Response " + resp.Status)
 	if resp.StatusCode == 404 {
 		return []byte(`[]`), "", nil
 	}
@@ -67,14 +67,14 @@ func (repo Repository) GitlabPostComment(url string, params map[string]string) (
 	}
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
-		logger().Errorf("Cannot create a post %s", url)
+		logger().Errorf("Cannot create a post " + url)
 		return err
 	}
 	req.Header.Add("Private-Token", config.Values.GitlabToken)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	resp, err := repo.Client.Do(req)
 	if err != nil {
-		logger().Errorf("Cannot make a post %s", url)
+		logger().Errorf("Cannot make a post " + url)
 		return err
 	}
 	bodyText, err := ioutil.ReadAll(resp.Body)
@@ -83,7 +83,7 @@ func (repo Repository) GitlabPostComment(url string, params map[string]string) (
 		return err
 	}
 	s := string(bodyText)
-	logger().Debugf("Gitlab Commit %s, %s", resp.Status, s)
+	logger().Debugf("Gitlab Commit " + resp.Status + " , " + s)
 	defer resp.Body.Close()
 	return nil
 }

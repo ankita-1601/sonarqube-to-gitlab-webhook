@@ -36,7 +36,7 @@ func ReceiveEvents(c echo.Context) (err error) {
 	}
 	logger := config.GetLogger
 	defer logger().Sync()
-	logger().Infof("Project Name %s, Project URL %s, Status %s, Revision %s", event.Project.Name, event.Project.URL, event.Status, event.Revision)
+	logger().Info("Project Name " + event.Project.Name + " Project URL " + event.Project.URL + " Status " + event.Status + " Revision " + event.Revision)
 	err = usecase.GitlabCommit(event)
 	if err != nil {
 		logger().Info("cannot post a commit to gitlab")

@@ -34,7 +34,7 @@ func GitlabCommit(event *domain.Events) error {
 		project, projectPathWithNamespace := checkProjectName(event.Project.Name)
 		parsedID, err := searchProjectID(project, projectPathWithNamespace)
 		if err != nil {
-			logger().Infof("ProjectID not found for Project Name: %s", event.Project.Name)
+			logger().Info("ProjectID not found for Project Name " + event.Project.Name)
 			return err
 		}
 		projectWithID = parsedID
