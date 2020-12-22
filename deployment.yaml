@@ -25,7 +25,7 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
           - name: GITLAB_URL
-            value: "https://gitlab.example.local"
+            value: "https://gitlab.com"
           - name: SONARQUBE_SECRET
             valueFrom:
               secretKeyRef:
