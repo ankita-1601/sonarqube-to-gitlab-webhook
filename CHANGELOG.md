@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2020-12-22
+### Added
+- new logger using zap
+- add more tests
+- Go test badge
+- Coveralls badge
+
+### Updated
+- golang version to 1.15 and all packages
+
+### Changed 
+- Change All funcs to return error
+
 ## [0.0.1] - 2020-04-03
 ### Added
 - Endpoint for sonarqube `/sonarqube-to-gitlab-webhook/v1/events`
