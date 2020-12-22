@@ -1,6 +1,6 @@
 # Sonarqube to Gitlab Webhook
 
-![Go Test](https://github.com/github.com/betorvs/sonarqube-to-gitlab-webhook/sonarqube-to-gitlab-webhook/workflows/Go%20Test/badge.svg)
+![Go Test](https://github.com/betorvs/sonarqube-to-gitlab-webhook/workflows/Go%20Test/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/betorvs/sonarqube-to-gitlab-webhook/badge.svg?branch=master)](https://coveralls.io/github/betorvs/sonarqube-to-gitlab-webhook?branch=master)
 
 ## Environment variables
